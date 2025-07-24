@@ -13,28 +13,38 @@ class AnalyzeDataFrame:
         pass
 
     def analyze_df(self, df):
-        print(20 * "-", "Columns", 20 * "-")
+        print("{:*^90}".format(" " + "COLUMNS" + " "))
         print(df.columns)
-        print(20 * "-", "First 5 Data in the Dataframe", 20 * "-")
+        
+        print("{:*^90}".format(" " + "First 5 Data in the Dataframe" +  " "))
         print(df.head(5))
-        print(20 * "-", "DF INFO", 20 * "-")
+        
+        print("{:*^90}".format(" " + "DF INFO" + " "))
         print(df.info())
-        print(20 * "-", "DF DESCRIBE", 20 * "-")
+        
+        print("{:*^90}".format(" " + "DF DESCRIBE" + " "))
         print(df.describe())
-        print(20 * "-", "NULL COUNt", 20 * "-")
+
+        print("{:*^90}".format(" " + "NULL COUNT" + " "))
         print(df.isna().sum())
-        print(20 * "-", "DF SHAPE", 20 * "-")
+
+        print("{:*^90}".format(" " + "DF SHAPE" + " "))
         print(df.shape)
-        print(20 * "-", "DF DUPLICATES", 20 * "-")
+
+        print("{:*^90}".format(" " + "DF DUPLICATES" + " "))
         print(df.duplicated().sum())
-        print(20 * "-", "DF UNIQUE VALUES", 20 * "-")
+
+        print("{:*^90}".format(" " + "DF UNIQUE VALUES" + " "))
         print(df.nunique())
-        print(20 * "-", "DF VALUE COUNTS", 20 * "-")
+
+        print("{:*^90}".format(" " + "DF VALUE COUNTS" + " "))
         print(df.value_counts())
-        print(20 * "-", "UNIQUE VALUES EACH COLUMN", 20 * "-")
+        
+        print("{:*^90}".format(" " + "UNIQUE VALUES EACH COLUMN" + " "))
         for col in df.columns:
-            print(20 * "-", f"{col} UNIQUE VALUES", 20 * "-")
+            print("{:*^90}".format(" " + f"UNIQUE VALUES IN COLUMN {col}" + " "))
             print(df[col].unique())
+            
          
     def grab_col_names(self, df: pd.DataFrame, cat_th: int = 10, car_th: int = 20) -> tuple[list, list, list]:
         """
