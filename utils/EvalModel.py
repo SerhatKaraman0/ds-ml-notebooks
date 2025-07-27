@@ -25,10 +25,10 @@ class EvalModel:
         y_pred = model.predict(X_test)
 
         accuracy = float(accuracy_score(y_test, y_pred))
-        recall = float(recall_score(y_test, y_pred))
-        precision = float(precision_score(y_test, y_pred))
-        f1 = float(f1_score(y_test, y_pred))
-        f_beta = float(fbeta_score(y_test, y_pred, beta=beta_param))
+        recall = float(recall_score(y_test, y_pred, average='weighted'))
+        precision = float(precision_score(y_test, y_pred, average='weighted'))
+        f1 = float(f1_score(y_test, y_pred, average='weighted'))
+        f_beta = float(fbeta_score(y_test, y_pred, beta=beta_param, average='weighted'))
 
         print(classification_report(y_test, y_pred))
         print(confusion_matrix(y_test, y_pred))
