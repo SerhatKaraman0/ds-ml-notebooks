@@ -11,7 +11,30 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 class VisualizeDataFrame:
     def __init__(self):
         pass
+
+
+    def cat_summary(self, df: pd.DataFrame, col_name, plot: bool=False):
+        print(pd.DataFrame({col_name: df[col_name].value_counts(),
+                            "Ratio": 100 * df[col_name].value_counts() / len(df)}))
+        
+        print("###################################")
+
+        if plot:
+            sns.countplot(x=df[col_name], data=df)
+            plt.show(block=True)
     
+
+    def num_summary(self, df: pd.DataFrame, numerical_col: str, plot=False):
+        quantiles = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99]
+        print(df[numerical_col].describe(quantiles).T)
+
+        if plot:
+            df[numerical_col].hist(bins=20)
+            plt.xlabel(numerical_col)
+            plt.ylabel(numerical_col)
+            plt.show(block=True)
+            
+
     def plot_3d(self, df:pd.DataFrame, data_x: str, data_y: str, data_z: str, color: str):
         missing_cols = [col for col in [data_x, data_y, data_z, color] if col not in df.columns]
         if missing_cols:
