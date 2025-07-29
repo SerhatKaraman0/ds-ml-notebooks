@@ -17,7 +17,10 @@ class HyperParameterTuning:
         self.knn_params = {"n_neighbors": range(2, 50)}
         self.cart_params = {
             "max_depth": range(1, 20),
-            "min_samples_split": range(2, 30)
+            "min_samples_split": range(2, 30),
+            "criterion": ["gini", "entropy", "log_loss"],
+            "splitter": ["best", "random"],
+            "max_features": ["sqrt", "log2", None]
         }
         self.rf_params = {
             "max_depth": [8, 15, None],
@@ -83,18 +86,30 @@ class HyperParameterTuning:
         return random_search.best_score_, random_search.best_params_
 
     def hyperparameter_optimization(self, X, y, cv=3, scoring="roc_auc"):
+        from sklearn.preprocessing import LabelEncoder
         print("Hyperparameter Optimization....")
         best_models = {}
 
+        # Encode y if it is not numeric
+        if y.dtype == 'O' or not np.issubdtype(y.dtype, np.number):
+            le = LabelEncoder()
+            y_encoded = le.fit_transform(y)
+        else:
+            y_encoded = y
+
+        n_classes = len(np.unique(y_encoded))
+        if scoring == "roc_auc" and n_classes > 2:
+            scoring = "roc_auc_ovr"
+
         for name, classifier, params in self.classifiers:
             print(f"########## {name} ##########")
-            cv_results = cross_validate(classifier, X, y, cv=cv, scoring=scoring)
+            cv_results = cross_validate(classifier, X, y_encoded, cv=cv, scoring=scoring)
             print(f"{scoring} (Before): {round(cv_results['test_score'].mean(), 4)}")
             
-            gs_best = GridSearchCV(classifier, params, cv=cv, n_jobs=-1, verbose=0).fit(X, y)
+            gs_best = GridSearchCV(classifier, params, cv=cv, n_jobs=-1, verbose=0, scoring=scoring).fit(X, y_encoded)
             final_model = classifier.set_params(**gs_best.best_params_)
             
-            cv_results = cross_validate(final_model, X, y, cv=cv, scoring=scoring)
+            cv_results = cross_validate(final_model, X, y_encoded, cv=cv, scoring=scoring)
             print(f"{scoring} (After): {round(cv_results['test_score'].mean(), 4)}")
             print(f" {name} best params: {gs_best.best_params_}", end="\n\n")
             best_models[name] = final_model
@@ -112,7 +127,12 @@ class HyperParameterTuning:
             ],
             voting='soft'
         ).fit(X, y)
-        cv_results = cross_validate(voting_clf, X, y, cv=3, scoring=["accuracy", "f1", "roc_auc"])
+        # Determine the correct roc_auc scoring based on the number of classes
+        n_classes = len(np.unique(y))
+        roc_auc_score_type = "roc_auc" if n_classes == 2 else "roc_auc_ovr"
+        cv_results = cross_validate(
+            voting_clf, X, y, cv=3, scoring={"accuracy": "accuracy", "f1": "f1", "roc_auc": roc_auc_score_type}
+        )
         print(f"Accuracy: {cv_results['test_accuracy'].mean()}")
         print(f"F1 Score: {cv_results['test_f1'].mean()}")
         print(f"ROC_AUC: {cv_results['test_roc_auc'].mean()}")

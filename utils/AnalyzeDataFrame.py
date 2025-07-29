@@ -49,7 +49,7 @@ class AnalyzeDataFrame:
        print("{:*^90}".format(" " + "NA" + " ")) 
        print(df.isnull().sum())
        print("{:*^90}".format(" " + "QUANTILES" + " ")) 
-       print(df.quantile([0, 0.05, 0.50, 0.95, 0.99, 1]).T)
+       print(df.quantile([0, 0.05, 0.50, 0.95, 0.99, 1], numeric_only=True).T)
     
 
     def missing_values_table(self, df: pd.DataFrame, na_name: bool = False):

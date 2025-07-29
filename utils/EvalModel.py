@@ -12,9 +12,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import cross_validate
 import xgboost
-
-
-
+import warnings
+warnings.filterwarnings(action='ignore')
 
 
 class EvalModel:
@@ -52,21 +51,30 @@ class EvalModel:
 
     def base_models(self, X, y, scoring="roc_auc"):
         print("Base Models...")
-        classifiers = [('LR', LogisticRegression()),
+        classifiers = [
+            ('LR', LogisticRegression(max_iter=1000)),
             ('KNN', KNeighborsClassifier()),
-            ("SVC", SVC()) ,
-            ("CART", DecisionTreeClassifier()),
-            ("RF", RandomForestClassifier()),
-            ('Adaboost', AdaBoostClassifier),
+            ('SVC', SVC(probability=True)),
+            ('CART', DecisionTreeClassifier()),
+            ('RF', RandomForestClassifier()),
+            ('Adaboost', AdaBoostClassifier()),
             ('GBM', GradientBoostingClassifier()),
-            # ('XGBoost', XGBClassifier(use_label_encoder=False, eval_metric='logloss')),
-            # ('LightGBM', LGBMClassifierO),
+            # ('XGBoost', xgboost.XGBClassifier(use_label_encoder=False, eval_metric='logloss')),
+            # ('LightGBM', LGBMClassifier()),
             # ('CatBoost', CatBoostClassifier(verbose=False))
-            ]
-        
+        ]
+
+        # Detect multiclass and adjust scoring if needed
+        n_classes = len(np.unique(y))
+        if scoring == "roc_auc" and n_classes > 2:
+            scoring = "roc_auc_ovr"
+
         for name, classifier in classifiers:
-            CV_results = cross_validate(classifier, X, y, cv=3, scoring=scoring)
-            print(f"{scoring}: fround(cv_results['test_score'].mean(), 4) ({name}) ")
+            try:
+                CV_results = cross_validate(classifier, X, y, cv=3, scoring=scoring)
+                print(f"{scoring}: {round(CV_results['test_score'].mean(), 4)} ({name}) ")
+            except Exception as e:
+                print(f"{scoring}: Error ({name}) - {e}")
 
 
 
