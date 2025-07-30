@@ -9,10 +9,28 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 class AnalyzeDataFrame:
+    """
+    A class for comprehensive dataframe analysis providing various methods to examine
+    and understand the structure, content, and statistics of a pandas DataFrame.
+    """
     def __init__(self):
         pass
 
-    def analyze_df(self, df):
+    def analyze_df(self, df: pd.DataFrame) -> None:
+        """
+        Provides a comprehensive analysis of the dataframe including columns, info, describe,
+        duplicates, unique values, and value counts.
+        
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The dataframe to analyze
+            
+        Returns:
+        --------
+        None
+            Prints various analyses of the dataframe
+        """
         print("{:*^90}".format(" " + "COLUMNS" + " "))
         print(df.columns)
         
@@ -37,7 +55,22 @@ class AnalyzeDataFrame:
             print(df[col].unique())
 
     
-    def check_df(self, df: pd.DataFrame, head: int = 5):
+    def check_df(self, df: pd.DataFrame, head: int = 5) -> None:
+       """
+       Shows basic dataframe information including shape, data types, head, tail, null values, and quantiles.
+       
+       Parameters:
+       -----------
+       df : pd.DataFrame
+           The dataframe to check
+       head : int, default=5
+           The number of rows to show in head and tail
+           
+       Returns:
+       --------
+       None
+           Prints basic information about the dataframe
+       """
        print("{:*^90}".format(" " + "SHAPE" + " ")) 
        print(df.shape)
        print("{:*^90}".format(" " + "TYPES" + " ")) 
@@ -52,7 +85,22 @@ class AnalyzeDataFrame:
        print(df.quantile([0, 0.05, 0.50, 0.95, 0.99, 1], numeric_only=True).T)
     
 
-    def missing_values_table(self, df: pd.DataFrame, na_name: bool = False):
+    def missing_values_table(self, df: pd.DataFrame, na_name: bool = False) -> typing.Optional[list[str]]:
+        """
+        Creates a table showing columns with missing values, count, and percentage of missing values.
+        
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The dataframe to analyze for missing values
+        na_name : bool, default=False
+            If True, returns the list of column names with missing values
+            
+        Returns:
+        --------
+        list[str] or None
+            If na_name is True, returns a list of column names with missing values
+        """
         na_columns = [col for col in df.columns if df[col].isnull().sum() > 0]
         n_miss = df[na_columns].isnull().sum().sort_values(ascending=False)
         ratio = (df[na_columns].isnull().sum() / df.shape[0] * 100).sort_values(ascending=False)
@@ -63,7 +111,24 @@ class AnalyzeDataFrame:
             return na_columns
         
 
-    def missing_vs_target(self, df: pd.DataFrame, target: str, na_columns: list[str]):
+    def missing_vs_target(self, df: pd.DataFrame, target: str, na_columns: list[str]) -> None:
+        """
+        Analyzes the relationship between missing values and target variable.
+        
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The dataframe to analyze
+        target : str
+            The name of the target column
+        na_columns : list[str]
+            List of column names with missing values
+            
+        Returns:
+        --------
+        None
+            Prints mean target value for rows with and without missing values
+        """
         temp_df = df.copy()
 
         for col in na_columns:
@@ -76,11 +141,45 @@ class AnalyzeDataFrame:
                                 'Count': temp_df.groupby(col)[target].count()}), end="\n\n\n")         
 
 
-    def target_summary_with_num(self, df: pd.DataFrame, target: str, numerical_col: str):
+    def target_summary_with_num(self, df: pd.DataFrame, target: str, numerical_col: str) -> None:
+        """
+        Summarizes target variable with numerical columns.
+        
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The dataframe to analyze
+        target : str
+            The name of the target column
+        numerical_col : str
+            The name of the numerical column to analyze
+            
+        Returns:
+        --------
+        None
+            Prints mean of numerical column grouped by target
+        """
         print(df.groupby(target).agg({numerical_col: "mean"}), end="\n\n\n")
 
 
-    def target_summary_with_cat(self, df: pd.DataFrame, target: str, categorical_col: str):
+    def target_summary_with_cat(self, df: pd.DataFrame, target: str, categorical_col: str) -> None:
+        """
+        Summarizes target variable with categorical columns.
+        
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The dataframe to analyze
+        target : str
+            The name of the target column
+        categorical_col : str
+            The name of the categorical column to analyze
+            
+        Returns:
+        --------
+        None
+            Prints mean of target grouped by categorical column
+        """
         print(pd.DataFrame({"TARGET_MEAN": df.groupby(categorical_col)[target].mean()}), end="\n\n\n")
 
 
@@ -138,7 +237,22 @@ class AnalyzeDataFrame:
         return cat_cols, num_cols, categorical_but_car
     
 
-    def correlation_for_drop(self, df: pd.DataFrame, threshold: float = 0.85):
+    def correlation_for_drop(self, df: pd.DataFrame, threshold: float = 0.85) -> set:
+        """
+        Identifies highly correlated columns that could be dropped to reduce multicollinearity.
+        
+        Parameters:
+        -----------
+        df : pd.DataFrame
+            The dataframe to analyze correlations in
+        threshold : float, default=0.85
+            The correlation threshold above which a column is considered for dropping
+            
+        Returns:
+        --------
+        set
+            A set of column names that are highly correlated and could be dropped
+        """
         columns_to_drop = set()
         correlations = df.corr()
         col_len = len(correlations.columns)

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Dict, Any, List
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -13,7 +13,15 @@ from lightgbm import LGBMClassifier
 from sklearn.ensemble import VotingClassifier
 
 class HyperParameterTuning:
+    """
+    A class for hyperparameter optimization of machine learning models using
+    grid search and randomized search techniques.
+    """
     def __init__(self):
+        """
+        Initialize the HyperParameterTuning class with predefined parameter grids
+        for various machine learning models.
+        """
         self.knn_params = {"n_neighbors": range(2, 50)}
         self.cart_params = {
             "max_depth": range(1, 20),
@@ -49,13 +57,51 @@ class HyperParameterTuning:
         ]
 
     def create_params_dict(self, keys: list, values: list) -> dict:
+        """
+        Creates a parameter dictionary for tuning from separate lists of keys and values.
+        
+        Parameters:
+        -----------
+        keys : list
+            List of parameter names
+        values : list
+            List of parameter values
+            
+        Returns:
+        --------
+        dict
+            Dictionary mapping parameter names to values
+        """
         params = dict(zip(keys, values))
         return params
     
-    def grid_search( self, model,
-                     X_train: pd.DataFrame, y_train: pd.Series, 
-                     params_dict: dict, scoring: str = "accuracy", 
-                     n_jobs: int = -1) -> Tuple[float, dict]:
+    def grid_search(self, model: Any,
+                   X_train: pd.DataFrame, y_train: pd.Series, 
+                   params_dict: Dict[str, Any], scoring: str = "accuracy", 
+                   n_jobs: int = -1) -> Tuple[float, Dict[str, Any]]:
+        """
+        Performs grid search for hyperparameter tuning.
+        
+        Parameters:
+        -----------
+        model : Any
+            Machine learning model to tune
+        X_train : pd.DataFrame
+            Training features
+        y_train : pd.Series
+            Training target values
+        params_dict : Dict[str, Any]
+            Dictionary of parameters to tune
+        scoring : str, default="accuracy"
+            Scoring metric to use for evaluation
+        n_jobs : int, default=-1
+            Number of CPU cores to use (-1 means all available cores)
+            
+        Returns:
+        --------
+        Tuple[float, Dict[str, Any]]
+            Best score and best parameters
+        """
         
         cv = StratifiedKFold()
         grid = GridSearchCV(estimator=model, param_grid=params_dict, cv=cv, scoring=scoring, n_jobs=n_jobs)
@@ -64,13 +110,35 @@ class HyperParameterTuning:
 
         return grid.best_score_, grid.best_params_
     
-    def randomized_search(self, model, 
-                        params_dict: dict, 
+    def randomized_search(self, model: Any, 
+                        params_dict: Dict[str, Any], 
                         X_train: pd.DataFrame, y_train: pd.Series, 
                         cv: int = 5, n_iter: int = 10, 
-                        scoring: str = "accuracy") -> Tuple[float, dict]:
+                        scoring: str = "accuracy") -> Tuple[float, Dict[str, Any]]:
         """
-        Perform randomized search cross-validation for hyperparameter tuning.
+        Performs randomized search cross-validation for hyperparameter tuning.
+        
+        Parameters:
+        -----------
+        model : Any
+            Machine learning model to tune
+        params_dict : Dict[str, Any]
+            Dictionary of parameters to sample from
+        X_train : pd.DataFrame
+            Training features
+        y_train : pd.Series
+            Training target values
+        cv : int, default=5
+            Number of cross-validation folds
+        n_iter : int, default=10
+            Number of parameter settings to sample
+        scoring : str, default="accuracy"
+            Scoring metric to use for evaluation
+            
+        Returns:
+        --------
+        Tuple[float, Dict[str, Any]]
+            Best score and best parameters
         """
         cv_strategy = StratifiedKFold(n_splits=cv)
         random_search = RandomizedSearchCV(
@@ -85,13 +153,37 @@ class HyperParameterTuning:
         random_search.fit(X_train, y_train)
         return random_search.best_score_, random_search.best_params_
 
-    def hyperparameter_optimization(self, X, y, cv=3, scoring="roc_auc"):
+    def hyperparameter_optimization(self, X: pd.DataFrame, y: pd.Series, 
+                                  cv: int = 3, scoring: str = "roc_auc") -> Dict[str, Any]:
+        """
+        Optimizes hyperparameters for multiple models and returns the best models.
+        
+        Parameters:
+        -----------
+        X : pd.DataFrame
+            Features dataframe
+        y : pd.Series
+            Target variable
+        cv : int, default=3
+            Number of cross-validation folds
+        scoring : str, default="roc_auc"
+            Scoring metric to use for evaluation
+            
+        Returns:
+        --------
+        Dict[str, Any]
+            Dictionary mapping model names to best models with optimized parameters
+            
+        Notes:
+        ------
+        Automatically encodes categorical target variables and adjusts scoring for multiclass problems.
+        """
         from sklearn.preprocessing import LabelEncoder
         print("Hyperparameter Optimization....")
         best_models = {}
 
         # Encode y if it is not numeric
-        if y.dtype == 'O' or not np.issubdtype(y.dtype, np.number):
+        if y.dtype.kind not in 'iufc':  # i: integer, u: unsigned integer, f: float, c: complex
             le = LabelEncoder()
             y_encoded = le.fit_transform(y)
         else:
@@ -117,7 +209,29 @@ class HyperParameterTuning:
         return best_models
     
 
-    def voting_classifier(self, best_models, X, y):
+    def voting_classifier(self, best_models: Dict[str, Any], X: pd.DataFrame, y: pd.Series) -> VotingClassifier:
+        """
+        Creates a voting classifier from the best models.
+        
+        Parameters:
+        -----------
+        best_models : Dict[str, Any]
+            Dictionary mapping model names to best models
+        X : pd.DataFrame
+            Features dataframe
+        y : pd.Series
+            Target variable
+            
+        Returns:
+        --------
+        VotingClassifier
+            Fitted voting classifier combining KNN, RF, and LightGBM models
+            
+        Notes:
+        ------
+        Prints accuracy, F1 score, and ROC_AUC for the voting classifier.
+        Automatically selects the appropriate ROC_AUC metric for binary or multiclass problems.
+        """
         print("Voting Classifier...")
         voting_clf = VotingClassifier(
             estimators=[
