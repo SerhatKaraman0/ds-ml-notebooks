@@ -44,7 +44,7 @@ class PreprocessDataFrame:
         return low_limit, up_limit
     
 
-    def chech_outlier(self, df: pd.DataFrame, col_name: str) -> bool:
+    def check_outlier(self, df: pd.DataFrame, col_name: str) -> bool:
         """
         Checks if outliers exist in a column.
         

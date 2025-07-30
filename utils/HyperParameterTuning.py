@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
-from sklearn.ensemble import VotingClassifier
+from sklearn.ensemble import VotingClassifier, AdaBoostClassifier
 
 class HyperParameterTuning:
     """
@@ -48,12 +48,18 @@ class HyperParameterTuning:
             "colsample_bytree": [0.7, 1]
         }
 
+        self.adaboost_params = {
+            "n_estimators": [50, 70, 100, 120, 150, 200],
+            "learning_rate": [0.001, 0.01, 0.1, 1, 10]
+        }
+
         self.classifiers = [
             ("KNN", KNeighborsClassifier(), self.knn_params),
             ("CART", DecisionTreeClassifier(), self.cart_params),
             ("RF", RandomForestClassifier(), self.rf_params),
             ("XGBoost", XGBClassifier(use_label_encoder=False, eval_metric='logloss'), self.xgboost_params),
-            ("LightGBM", LGBMClassifier(), self.lightgbm_params)
+            ("LightGBM", LGBMClassifier(), self.lightgbm_params),
+            ("AdaBoost", AdaBoostClassifier(), self.adaboost_params)
         ]
 
     def create_params_dict(self, keys: list, values: list) -> dict:
