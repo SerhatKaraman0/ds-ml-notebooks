@@ -46,64 +46,85 @@ The `utils` directory contains several Python classes that provide utility funct
 
 ### AnalyzeDataFrame
 
-A class for comprehensive dataframe analysis with the following methods:
+A comprehensive class for dataframe analysis providing methods to examine and understand the structure, content, and statistics of pandas DataFrames:
 
-- `analyze_df(df)`: Provides a comprehensive analysis of the dataframe including columns, info, describe, duplicates, unique values, and value counts.
+- `analyze_df(df)`: Provides a comprehensive analysis including columns, info, describe, duplicates, unique values, and value counts for each column.
 - `check_df(df, head=5)`: Shows basic dataframe information including shape, data types, head, tail, null values, and quantiles.
-- `missing_values_table(df, na_name=False)`: Creates a table showing columns with missing values, count, and percentage of missing values.
-- `missing_vs_target(df, target, na_columns)`: Analyzes the relationship between missing values and target variable.
-- `target_summary_with_num(df, target, numerical_col)`: Summarizes target variable with numerical columns.
-- `target_summary_with_cat(df, target, categorical_col)`: Summarizes target variable with categorical columns.
-- `grab_col_names(df, cat_th=10, car_th=20)`: Identifies and categorizes columns as categorical, numerical, or categorical but cardinal.
-- `correlation_for_drop(df, threshold=0.85)`: Identifies highly correlated columns that could be dropped.
+- `missing_values_table(df, na_name=False)`: Creates a table showing columns with missing values, count, and percentage. Returns column names with missing values if na_name=True.
+- `missing_vs_target(df, target, na_columns)`: Analyzes the relationship between missing values and target variable by creating flag columns.
+- `target_summary_with_num(df, target, numerical_col)`: Summarizes target variable with numerical columns showing mean values.
+- `target_summary_with_cat(df, target, categorical_col)`: Summarizes target variable with categorical columns showing mean values.
+- `grab_col_names(df, cat_th=10, car_th=20)`: Identifies and categorizes columns as categorical, numerical, or categorical but cardinal based on data types and unique value thresholds.
+- `correlation_for_drop(df, threshold=0.85)`: Identifies highly correlated columns that could be dropped to reduce multicollinearity.
 
 ### EvalModel
 
-A class for evaluating machine learning models with the following methods:
+A comprehensive class for evaluating machine learning models with automatic problem type detection and support for both regression and classification:
 
-- `eval_regression_model(X_test, y_test, model)`: Evaluates regression models using R², MAE, and MSE.
-- `eval_class_model(X_test, y_test, model, visualize=False, beta_param=0.5)`: Evaluates classification models using accuracy, recall, precision, F1, and F-beta scores.
-- `base_models(X, y, scoring="roc_auc")`: Runs and evaluates multiple base classification models on a dataset.
+**Model Evaluation Methods:**
+- `eval_regression_model(X_test, y_test, model)`: Evaluates regression models using R², MAE, and MSE metrics.
+- `eval_class_model(X_test, y_test, model, visualize=False, beta_param=0.5)`: Evaluates classification models using accuracy, recall, precision, F1, and F-beta scores with optional confusion matrix visualization.
+
+**Automated Model Comparison:**
+- `base_models_auto(X, y, scoring=None)`: Automatically detects problem type (regression/classification) and runs appropriate models with suitable scoring metrics.
+- `base_models(X, y, scoring="roc_auc")`: Runs and evaluates multiple base classification models (LR, KNN, SVC, CART, RF, AdaBoost, GBM). Automatically handles multiclass problems.
+- `base_regression_models(X, y, scoring="neg_mean_squared_error")`: Runs and evaluates multiple regression models (Linear, Ridge, Lasso, KNN, CART, RF, AdaBoost, GBM, XGBoost).
+- `base_tree_models(X, y, scoring=None)`: Runs tree-based models with automatic problem type detection (CART, RF, AdaBoost, GBM, XGBoost).
+
+**Utility Methods:**
+- `_is_regression_problem(y)`: Private method that determines if the target variable represents a regression or classification problem.
 
 ### HyperParameterTuning
 
-A class for hyperparameter optimization with the following methods:
+A class for hyperparameter optimization with predefined parameter grids for popular machine learning models:
 
-- `create_params_dict(keys, values)`: Creates a parameter dictionary for tuning.
-- `grid_search(model, X_train, y_train, params_dict, scoring="accuracy", n_jobs=-1)`: Performs grid search for hyperparameter tuning.
-- `randomized_search(model, params_dict, X_train, y_train, cv=5, n_iter=10, scoring="accuracy")`: Performs randomized search for hyperparameter tuning.
-- `hyperparameter_optimization(X, y, cv=3, scoring="roc_auc")`: Optimizes hyperparameters for multiple models and returns the best models.
-- `voting_classifier(best_models, X, y)`: Creates a voting classifier from the best models.
+**Search Methods:**
+- `create_params_dict(keys, values)`: Creates a parameter dictionary for tuning from separate lists of keys and values.
+- `grid_search(model, X_train, y_train, params_dict, scoring="accuracy", n_jobs=-1)`: Performs exhaustive grid search for hyperparameter tuning.
+- `randomized_search(model, params_dict, X_train, y_train, cv=5, n_iter=10, scoring="accuracy")`: Performs randomized search cross-validation for efficient hyperparameter tuning.
+
+**Advanced Optimization:**
+- `hyperparameter_optimization(X, y, cv=3, scoring="roc_auc")`: Optimizes hyperparameters for multiple models (KNN, CART, RF, XGBoost, LightGBM, AdaBoost) and returns the best models. Automatically handles categorical target encoding and multiclass problems.
+- `voting_classifier(best_models, X, y)`: Creates a soft voting classifier from the best models (KNN, RF, LightGBM) and evaluates it using accuracy, F1, and ROC_AUC metrics.
 
 ### PreprocessDataFrame
 
-A class for data preprocessing with the following methods:
+A class for data preprocessing operations focusing on outlier handling and categorical encoding:
 
-- `outlier_thresholds(df, col_name, q1=0.25, q3=0.75)`: Calculates outlier thresholds for a column.
-- `chech_outlier(df, col_name)`: Checks if outliers exist in a column.
-- `grab_outliers(df, col_name, index=False)`: Retrieves outliers from a column.
-- `remove_outlier(df, col_name)`: Removes outliers from a column.
-- `replace_with_thresholds(df, variable)`: Replaces outliers with threshold values.
-- `one_hot_encoder(df, categorical_cols, drop_first=False)`: One-hot encodes categorical columns.
+**Outlier Detection and Handling:**
+- `outlier_thresholds(df, col_name, q1=0.25, q3=0.75)`: Calculates outlier thresholds using the IQR method with customizable quartile values.
+- `check_outlier(df, col_name)`: Checks if outliers exist in a column using the IQR method.
+- `grab_outliers(df, col_name, index=False)`: Retrieves and displays outliers from a column with optional index return.
+- `remove_outlier(df, col_name)`: Removes outliers from a column and returns the cleaned dataframe.
+- `replace_with_thresholds(df, variable)`: Replaces outliers with threshold values (caps outliers) - modifies dataframe in-place.
+
+**Encoding:**
+- `one_hot_encoder(df, categorical_cols, drop_first=False)`: One-hot encodes categorical columns with option to drop first category for each feature.
 
 ### SetupDataFrame
 
-A class for loading datasets with the following methods:
+A class for loading datasets from predefined directories with hardcoded paths:
 
-- `setup_ml(file_dir)`: Loads machine learning datasets from the ml-data directory.
-- `setup_ds(file_dir)`: Loads data science datasets from the data-ds directory.
+- `setup_ml(file_dir)`: Loads machine learning datasets from the ml-data directory (`/Users/user/Desktop/Projects/data-science/ml-data`).
+- `setup_ds(file_dir)`: Loads data science datasets from the data-ds directory (`/Users/user/Desktop/Projects/data-science/data-ds`).
+
+**Note:** This class uses hardcoded absolute paths and assumes CSV format. Paths may need to be updated based on your system configuration.
 
 ### VisualizeDataFrame
 
-A class for data visualization with the following methods:
+A class for data visualization with various plotting methods for exploratory data analysis:
 
-- `cat_summary(df, col_name, plot=False)`: Summarizes categorical columns and optionally plots them.
-- `num_summary(df, numerical_col, plot=False)`: Summarizes numerical columns and optionally plots histograms.
-- `plot_3d(df, data_x, data_y, data_z, color)`: Creates 3D scatter plots.
-- `barplot_maker(df, cat_x, cat_y, title)`: Creates bar plots.
-- `boxplot_maker(df, cat_x, cat_y)`: Creates box plots.
-- `subplot_maker(df, num_cols)`: Creates subplots for multiple numerical columns.
-- `scatterplot_maker(df, data_x, data_y, data_hue)`: Creates scatter plots with hue.
+**Summary and Distribution Plots:**
+- `cat_summary(df, col_name, plot=False)`: Summarizes categorical columns with value counts and ratios, optionally creates count plots.
+- `num_summary(df, numerical_col, plot=False)`: Summarizes numerical columns with descriptive statistics including custom quantiles, optionally creates histograms.
+- `plot_all_histograms(df, title_prefix="")`: Creates a grid of histograms for all numerical columns in the dataframe with KDE overlays.
+
+**Advanced Visualizations:**
+- `plot_3d(df, data_x, data_y, data_z, color)`: Creates interactive 3D scatter plots using plotly with color coding.
+- `barplot_maker(df, cat_x, cat_y, title)`: Creates customized bar plots with proper formatting and error handling.
+- `boxplot_maker(df, cat_x, cat_y)`: Creates box plots for categorical vs numerical variable analysis.
+- `subplot_maker(df, num_cols)`: Creates a grid of density plots (KDE) for multiple numerical columns.
+- `scatterplot_maker(df, data_x, data_y, data_hue)`: Creates scatter plots with hue for three-variable relationships.
 
 ## Usage Example
 
@@ -127,36 +148,125 @@ hp_tuning = HyperParameterTuning()
 # Load a dataset
 df = setup_df.setup_ml("11-iris.csv")
 
-# Analyze the dataset
+# Comprehensive dataset analysis
 analyze_df.check_df(df)
+analyze_df.analyze_df(df)
 
 # Get column names by type
 cat_cols, num_cols, cat_but_car = analyze_df.grab_col_names(df)
 
-# Visualize numerical columns
+# Check for missing values
+na_columns = analyze_df.missing_values_table(df, na_name=True)
+
+# Visualize the data
+visualize_df.plot_all_histograms(df, "Distribution of")
 for col in num_cols:
     visualize_df.num_summary(df, col, plot=True)
 
-# Preprocess the data - One-hot encode categorical columns
-df = preprocess_df.one_hot_encoder(df, cat_cols)
+# Check and handle outliers
+for col in num_cols:
+    if preprocess_df.check_outlier(df, col):
+        print(f"Outliers found in {col}")
+        preprocess_df.grab_outliers(df, col)
+        # Option 1: Remove outliers
+        # df = preprocess_df.remove_outlier(df, col)
+        # Option 2: Cap outliers with thresholds
+        preprocess_df.replace_with_thresholds(df, col)
 
-# Train a model and evaluate it
+# Preprocess the data - One-hot encode categorical columns
+if cat_cols:
+    df = preprocess_df.one_hot_encoder(df, cat_cols)
+
+# Prepare features and target
+X = df.drop("target", axis=1)
+y = df["target"]
+
+# Automatically evaluate multiple models based on problem type
+print("=== Automatic Model Selection ===")
+eval_model.base_models_auto(X, y)
+
+# For classification problems specifically
+print("\n=== Classification Models ===")
+eval_model.base_models(X, y, scoring="accuracy")
+
+# For regression problems specifically
+# eval_model.base_regression_models(X, y, scoring="neg_mean_squared_error")
+
+# Tree-based models only
+print("\n=== Tree-based Models ===")
+eval_model.base_tree_models(X, y)
+
+# Train and evaluate a specific model
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
-X = df.drop("target", axis=1)
-y = df["target"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 model = RandomForestClassifier()
 model.fit(X_train, y_train)
 
-# Evaluate the model
-accuracy, recall, precision, f1, f_beta = eval_model.eval_class_model(X_test, y_test, model, visualize=True)
+# Evaluate the model with detailed metrics
+accuracy, recall, precision, f1, f_beta = eval_model.eval_class_model(
+    X_test, y_test, model, visualize=True
+)
 
-# Tune hyperparameters
-best_models = hp_tuning.hyperparameter_optimization(X, y)
+# Advanced hyperparameter optimization
+print("\n=== Hyperparameter Optimization ===")
+best_models = hp_tuning.hyperparameter_optimization(X, y, cv=3, scoring="accuracy")
+
+# Create voting classifier from best models
+voting_clf = hp_tuning.voting_classifier(best_models, X, y)
+
+# Advanced visualizations
+if len(num_cols) >= 3:
+    visualize_df.plot_3d(df, num_cols[0], num_cols[1], num_cols[2], "target")
+
+# Correlation analysis for feature selection
+highly_corr_cols = analyze_df.correlation_for_drop(X, threshold=0.9)
+print(f"Highly correlated columns to consider dropping: {highly_corr_cols}")
 ```
+
+## Key Features
+
+### 🔍 **Comprehensive Data Analysis**
+- Automated dataframe inspection with detailed statistics
+- Missing value analysis with target correlation
+- Intelligent column type detection (categorical, numerical, cardinal)
+- Correlation analysis for feature selection
+
+### 🤖 **Smart Model Evaluation**
+- **Automatic problem type detection** (regression vs classification)
+- **Multi-model comparison** with cross-validation
+- Support for both **binary and multiclass** classification
+- Specialized **tree-based model evaluation**
+- **Regression model benchmarking** with multiple algorithms
+
+### ⚙️ **Advanced Hyperparameter Optimization**
+- **Grid search and randomized search** implementations
+- **Pre-configured parameter grids** for popular ML algorithms
+- **Automated hyperparameter tuning** for multiple models
+- **Voting classifier** creation from best-performing models
+- Support for **custom scoring metrics**
+
+### 🛠️ **Robust Data Preprocessing**
+- **IQR-based outlier detection** with customizable thresholds
+- **Flexible outlier handling** (removal or capping)
+- **One-hot encoding** with drop_first option
+- **Comprehensive outlier analysis** with visualization options
+
+### 📊 **Rich Data Visualization**
+- **Interactive 3D plotting** with Plotly
+- **Automated histogram generation** for all numerical columns
+- **Customizable categorical summaries** with plotting options
+- **Advanced subplot creation** for multiple variables
+- **Error handling** for missing columns in visualizations
+
+### 🚀 **Production-Ready Features**
+- **Type hints** throughout all classes for better code quality
+- **Comprehensive error handling** and validation
+- **Modular design** for easy integration
+- **Automatic multiclass problem handling**
+- **Extensible architecture** for custom implementations
 
 ## Requirements
 
