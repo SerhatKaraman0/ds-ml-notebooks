@@ -122,8 +122,8 @@ class VisualizeDataFrame:
             plt.title(f"{title_prefix} {col}")
             plt.xlabel("")
             plt.ylabel("")
-            plt.tight_layout ()
-            plt.show()
+        plt.tight_layout ()
+        plt.show()
             
 
     def barplot_maker(self, df: pd.DataFrame, cat_x: str, cat_y: str, title: str) -> None:
