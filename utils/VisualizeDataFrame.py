@@ -6,6 +6,7 @@ import seaborn as sns
 import os 
 import sys
 from typing import List
+import math
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -107,6 +108,23 @@ class VisualizeDataFrame:
         
         fig = px.scatter_3d(df, data_x, data_y, data_z, color)
         fig.show()
+
+
+    def plot_all_histograms(self, df, title_prefix = ""):
+        num_cols = df.select_dtypes(include=[np.number]).columns
+        n_cols = 3
+        n_rows = math.ceil(len(num_cols) / n_cols)
+        plt.figure(figsize = (5 * n_cols, 4 * n_rows))
+        
+        for i, col in enumerate(num_cols, 1): 
+            plt.subplot(n_rows, n_cols, i)
+            sns.histplot(df[col], kde=True ,bins=30)
+            plt.title(f"{title_prefix} {col}")
+            plt.xlabel("")
+            plt.ylabel("")
+            plt.tight_layout ()
+            plt.show()
+            
 
     def barplot_maker(self, df: pd.DataFrame, cat_x: str, cat_y: str, title: str) -> None:
         """

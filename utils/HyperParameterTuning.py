@@ -38,14 +38,18 @@ class HyperParameterTuning:
         }
         self.xgboost_params = {
             "learning_rate": [0.1, 0.01],
-            "max_depth": [5, 8],
-            "n_estimators": [100, 200],
-            "colsample_bytree": [0.5, 1]
+            "max_depth": [5, 8, 12, 20, 30],
+            "n_estimators": [100, 200, 300, 500],
+            "colsample_bytree": [0.3, 0.4, 0.5, 0.8, 1]
         }
         self.lightgbm_params = {
-            "learning_rate": [0.01, 0.1],
-            "n_estimators": [300, 500],
-            "colsample_bytree": [0.7, 1]
+            "learning_rate": [0.01, 0.05, 0.1, 0.3],
+            "n_estimators": [100, 300, 500, 1000],
+            "colsample_bytree": [0.6, 0.7, 0.8, 1],
+            "max_depth": [3, 5, 7, -1],
+            "num_leaves": [15, 31, 63, 127],
+            "min_child_samples": [10, 20, 30],
+            "subsample": [0.6, 0.8, 1],
         }
 
         self.adaboost_params = {
@@ -58,7 +62,7 @@ class HyperParameterTuning:
             ("CART", DecisionTreeClassifier(), self.cart_params),
             ("RF", RandomForestClassifier(), self.rf_params),
             ("XGBoost", XGBClassifier(use_label_encoder=False, eval_metric='logloss'), self.xgboost_params),
-            ("LightGBM", LGBMClassifier(), self.lightgbm_params),
+            ("LightGBM", LGBMClassifier(verbosity=-1), self.lightgbm_params),
             ("AdaBoost", AdaBoostClassifier(), self.adaboost_params)
         ]
 
